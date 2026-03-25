@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ollama AI — Offline Survival Kit</title>
+<style>
+  :root {
+    --bg:      #0c0c10;
+    --bg2:     #13131a;
+    --bg3:     #1a1a24;
+    --border:  #2a2a3a;
+    --amber:   #ffb347;
+    --green:   #5aff7a;
+    --blue:    #60aaff;
+    --purple:  #aa88ff;
+    --red:     #ff5555;
+    --text:    #d0cce0;
+    --muted:   #555570;
+    --font:    'Consolas','Courier New',monospace;
+    --code-bg: #0a0a12;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; }
+
+  /* ── Setup Screen ─────────────────────────────────────────── */
+  #setup-screen {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; flex-direction: column; gap: 20px; padding: 20px;
+  }
+  .ai-logo { font-size: 11px; color: var(--purple); letter-spacing: 2px; text-align: center; line-height: 1.4; white-space: pre; }
+  .setup-box {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 28px 32px; width: 100%; max-width: 420px;
+  }
+  .setup-box h2 { color: var(--purple); font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; color: var(--muted); font-size: 11px; letter-spacing: 1px; margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 13px;
+    padding: 8px 10px; border-radius: 4px; outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--purple); }
+  .btn-connect {
+    width: 100%; background: var(--purple); color: #fff; font-family: var(--font);
+    font-size: 13px; font-weight: bold; letter-spacing: 2px;
+    padding: 10px; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; margin-top: 4px;
+  }
+  .btn-connect:hover { background: #c8aaff; }
+  .hint { color: var(--muted); font-size: 11px; margin-top: 14px; line-height: 1.7; }
+  .hint code { color: var(--amber); background: var(--bg3); padding: 1px 5px; border-radius: 3px; }
+
+  /* ── Main App ─────────────────────────────────────────────── */
+  #ai-app { display: none; height: 100vh; flex-direction: column; }
+  #ai-app.active { display: flex; }
+
+  .top-bar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 14px; height: 48px; gap: 10px; flex-shrink: 0;
+  }
+  .top-bar .title { color: var(--purple); font-size: 12px; letter-spacing: 2px; font-weight: bold; }
+  .model-select {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--amber);
+    font-family: var(--font); font-size: 12px; padding: 4px 8px; border-radius: 4px; outline: none;
+  }
+  .spacer { flex: 1; }
+  .token-count { color: var(--muted); font-size: 11px; }
+  .btn-clear {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--font); font-size: 11px; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer; letter-spacing: 1px;
+  }
+  .btn-clear:hover { border-color: var(--red); color: var(--red); }
+  .btn-disc2 {
+    background: transparent; border: 1px solid var(--border); color: var(--red);
+    font-family: var(--font); font-size: 11px; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer;
+  }
+  .btn-disc2:hover { background: var(--red); color: #fff; }
+
+  .sys-bar {
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; padding: 6px 14px; flex-shrink: 0;
+  }
+  .sys-label { color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+  #sys-input {
+    flex: 1; background: transparent; border: none; color: var(--muted); font-family: var(--font);
+    font-size: 12px; outline: none; min-width: 0;
+  }
+  #sys-input:focus { color: var(--text); }
+  .sys-hint { color: var(--muted); font-size: 10px; }
+
+  #messages {
+    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px;
+    scroll-behavior: smooth;
+  }
+  #messages::-webkit-scrollbar { width: 5px; }
+  #messages::-webkit-scrollbar-track { background: var(--bg); }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .msg-wrap { display: flex; gap: 10px; max-width: 900px; }
+  .msg-wrap.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-wrap.assistant { align-self: flex-start; }
+  .msg-wrap.error { align-self: flex-start; }
+
+  .avatar {
+    width: 30px; height: 30px; border-radius: 4px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; margin-top: 2px;
+  }
+  .avatar.user-av { background: rgba(255,179,71,0.15); border: 1px solid var(--amber); }
+  .avatar.ai-av   { background: rgba(170,136,255,0.15); border: 1px solid var(--purple); }
+
+  .bubble {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 14px; max-width: 680px;
+    line-height: 1.65; position: relative;
+  }
+  .msg-wrap.user .bubble { background: rgba(255,179,71,0.07); border-color: rgba(255,179,71,0.3); color: var(--text); }
+  .msg-wrap.assistant .bubble { background: rgba(170,136,255,0.05); border-color: rgba(170,136,255,0.2); }
+  .msg-wrap.error .bubble { background: rgba(255,85,85,0.08); border-color: rgba(255,85,85,0.3); color: var(--red); }
+
+  .role-label { font-size: 10px; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+  .msg-wrap.user      .role-label { color: var(--amber); }
+  .msg-wrap.assistant .role-label { color: var(--purple); }
+  .bubble-text { white-space: pre-wrap; word-break: break-word; }
+
+  /* Code blocks inside AI response */
+  .bubble-text code {
+    background: var(--code-bg); color: var(--green); padding: 1px 5px;
+    border-radius: 3px; font-size: 12px; font-family: var(--font);
+  }
+  .bubble-text pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+    padding: 10px 12px; margin: 8px 0; overflow-x: auto;
+  }
+  .bubble-text pre code { background: none; padding: 0; color: var(--green); }
+
+  .thinking {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--purple); font-size: 12px; padding: 10px 14px;
+  }
+  .dot-flicker { display: flex; gap: 4px; }
+  .dot-flicker span {
+    width: 5px; height: 5px; background: var(--purple);
+    border-radius: 50%; animation: flicker 1s infinite;
+  }
+  .dot-flicker span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-flicker span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes flicker { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+  .input-area {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 12px 14px; display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+  }
+  #user-input {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 13px;
+    padding: 10px 12px; border-radius: 4px; outline: none; resize: none;
+    height: 42px; max-height: 160px; line-height: 1.5;
+  }
+  #user-input:focus { border-color: var(--purple); }
+  #user-input::placeholder { color: var(--muted); }
+
+  .right-btns { display: flex; flex-direction: column; gap: 6px; }
+  .btn-send {
+    background: var(--purple); color: #fff; font-family: var(--font);
+    font-size: 13px; font-weight: bold; padding: 10px 18px;
+    border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;
+  }
+  .btn-send:hover:not(:disabled) { background: #c8aaff; }
+  .btn-send:disabled { background: var(--border); color: var(--muted); cursor: default; }
+  .btn-stop {
+    background: transparent; border: 1px solid var(--red); color: var(--red);
+    font-family: var(--font); font-size: 11px; padding: 5px 12px;
+    border-radius: 4px; cursor: pointer; display: none;
+  }
+  .btn-stop.show { display: block; }
+
+  .status-bar {
+    padding: 3px 14px; font-size: 10px; letter-spacing: 1px; flex-shrink: 0;
+    background: var(--bg3); border-top: 1px solid var(--border);
+  }
+  .status-bar.ok   { color: var(--green); }
+  .status-bar.gen  { color: var(--purple); }
+  .status-bar.err  { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- ── Setup Screen ──────────────────────────────────────────────────────────── -->
+<div id="setup-screen">
+  <div class="ai-logo">
+░█▀█░█░░░█░░░█▀█░█▄█░█▀█
+░█░█░█░░░█░░░█▀█░█░█░█▀█
+░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀░▀  AI
+  </div>
+
+  <div class="setup-box">
+    <h2>🤖 Connect to AI Server</h2>
+    <div class="field">
+      <label>SERVER IP (machine running Ollama)</label>
+      <input type="text" id="srv-ip" placeholder="192.168.1.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>PROXY PORT (ollama_proxy.py)</label>
+      <input type="number" id="srv-port" value="11435">
+    </div>
+    <button class="btn-connect" onclick="doConnect()">▶ CONNECT & LOAD MODELS</button>
+    <div class="hint">
+      <strong style="color:var(--amber)">Setup order on the server machine:</strong><br>
+      1. Install Ollama from <code>ollama.com</code><br>
+      2. Run: <code>ollama pull llama3.2:1b</code><br>
+      3. Run: <code>python scripts/ollama_proxy.py</code><br>
+      4. Enter that machine's IP above<br><br>
+      <strong style="color:var(--green)">Recommended models (small &amp; fast):</strong><br>
+      <code>llama3.2:1b</code> — 1.3GB, very fast<br>
+      <code>gemma2:2b</code> — 1.6GB, smart<br>
+      <code>phi3:mini</code> — 2.3GB, excellent<br>
+      <code>mistral:7b</code> — 4.1GB, best quality
+    </div>
+  </div>
+</div>
+
+<!-- ── AI App ────────────────────────────────────────────────────────────────── -->
+<div id="ai-app">
+  <div class="top-bar">
+    <span style="color:var(--purple);font-size:16px">⬡</span>
+    <span class="title">OLLAMA AI</span>
+    <span style="color:var(--muted);font-size:12px">Model:</span>
+    <select class="model-select" id="model-select"></select>
+    <span class="spacer"></span>
+    <span class="token-count" id="token-count"></span>
+    <button class="btn-clear" onclick="clearChat()">✕ CLEAR</button>
+    <button class="btn-disc2" onclick="goBack()">↩ BACK</button>
+  </div>
+
+  <div class="sys-bar">
+    <span class="sys-label">SYSTEM:</span>
+    <input type="text" id="sys-input"
+      value="You are a helpful offline AI assistant. Be concise and practical."
+      placeholder="System prompt…">
+    <span class="sys-hint">(optional)</span>
+  </div>
+
+  <div id="messages">
+    <div class="msg-wrap assistant">
+      <div class="avatar ai-av">⬡</div>
+      <div class="bubble">
+        <div class="role-label">OLLAMA AI</div>
+        <div class="bubble-text">Hello. I am running locally on your network — no internet required. Select a model above and ask me anything.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar ok" id="status-bar">● READY</div>
+
+  <div class="input-area">
+    <textarea id="user-input" placeholder="Ask the AI… (Enter to send, Shift+Enter for newline)"
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <div class="right-btns">
+      <button class="btn-send" id="send-btn" onclick="sendMsg()">SEND ↵</button>
+      <button class="btn-stop" id="stop-btn" onclick="stopGen()">■ STOP</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let baseURL = '', currentModel = '', abortCtrl = null;
+const history = [];
+
+// ─── Connect ──────────────────────────────────────────────────────────────────
+async function doConnect() {
+  const ip   = document.getElementById('srv-ip').value.trim();
+  const port = document.getElementById('srv-port').value.trim() || '11435';
+  if (!ip) { alert('Enter server IP'); return; }
+
+  baseURL = `http://${ip}:${port}`;
+  const btn = document.querySelector('.btn-connect');
+  btn.textContent = 'Connecting…';
+
+  try {
+    const r = await fetch(`${baseURL}/health`, { signal: AbortSignal.timeout(5000) });
+    const d = await r.json();
+
+    if (d.status !== 'ok') throw new Error(d.message || d.hint || 'Ollama not running');
+
+    // Populate models
+    const sel = document.getElementById('model-select');
+    sel.innerHTML = '';
+    if (d.models && d.models.length) {
+      d.models.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+      currentModel = d.models[0];
+    } else {
+      const opt = document.createElement('option');
+      opt.value = 'llama3.2:1b'; opt.textContent = 'llama3.2:1b (not downloaded yet)';
+      sel.appendChild(opt);
+    }
+
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('ai-app').classList.add('active');
+    setStatus('ok', '● CONNECTED — ' + baseURL);
+
+  } catch(e) {
+    btn.textContent = '▶ CONNECT & LOAD MODELS';
+    alert('Failed: ' + e.message + '\n\nMake sure ollama_proxy.py is running on the server.');
+  }
+}
+
+function goBack() {
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('ai-app').classList.remove('active');
+}
+
+// ─── Sending ──────────────────────────────────────────────────────────────────
+async function sendMsg() {
+  const inp   = document.getElementById('user-input');
+  const text  = inp.value.trim();
+  const model = document.getElementById('model-select').value;
+  const sysp  = document.getElementById('sys-input').value.trim();
+
+  if (!text || !baseURL) return;
+
+  inp.value = '';
+  inp.style.height = '';
+  inp.focus();
+
+  appendMsg('user', text);
+  history.push({ role: 'user', content: text });
+
+  setBusy(true);
+
+  // Build message array
+  const messages = [];
+  if (sysp) messages.push({ role: 'system', content: sysp });
+  messages.push(...history);
+
+  const aiRow = appendMsg('assistant', '', true);
+  let fullText = '';
+
+  try {
+    abortCtrl = new AbortController();
+    const res = await fetch(`${baseURL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, messages, stream: true }),
+      signal: abortCtrl.signal,
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const reader = res.body.getReader();
+    const dec    = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const lines = dec.decode(value).split('\n').filter(Boolean);
+      for (const line of lines) {
+        try {
+          const d = JSON.parse(line);
+          if (d.message?.content) {
+            fullText += d.message.content;
+            updateBubble(aiRow, fullText);
+          }
+          if (d.done) break;
+        } catch(_) {}
+      }
+    }
+
+    history.push({ role: 'assistant', content: fullText });
+
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      updateBubble(aiRow, '[Error: ' + e.message + ']', true);
+    }
+  }
+
+  setBusy(false);
+}
+
+function stopGen() {
+  if (abortCtrl) { abortCtrl.abort(); abortCtrl = null; }
+  setBusy(false);
+}
+
+// ─── DOM helpers ──────────────────────────────────────────────────────────────
+function appendMsg(role, text, streaming = false) {
+  const box  = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap ' + role;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + (role === 'user' ? 'user-av' : 'ai-av');
+  avatar.textContent = role === 'user' ? '▲' : '⬡';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = `<div class="role-label">${role === 'user' ? 'YOU' : 'OLLAMA AI'}</div>`;
+
+  if (streaming) {
+    bubble.innerHTML += '<div class="thinking"><div class="dot-flicker"><span></span><span></span><span></span></div> Generating…</div>';
+  } else {
+    const textEl = document.createElement('div');
+    textEl.className = 'bubble-text';
+    textEl.innerHTML = formatResponse(text);
+    bubble.appendChild(textEl);
+  }
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+
+  return bubble;
+}
+
+function updateBubble(bubble, text, isError = false) {
+  const existing = bubble.querySelector('.thinking, .bubble-text');
+  if (existing && existing.classList.contains('thinking')) existing.remove();
+
+  let textEl = bubble.querySelector('.bubble-text');
+  if (!textEl) {
+    textEl = document.createElement('div');
+    textEl.className = 'bubble-text';
+    bubble.appendChild(textEl);
+  }
+
+  textEl.innerHTML = isError
+    ? `<span style="color:var(--red)">${esc(text)}</span>`
+    : formatResponse(text);
+
+  const box = document.getElementById('messages');
+  box.scrollTop = box.scrollHeight;
+}
+
+function formatResponse(text) {
+  // Basic markdown-ish formatting
+  return esc(text)
+    .replace(/```([a-z]*)\n([\s\S]*?)```/g, (_, lang, code) =>
+      `<pre><code>${code}</code></pre>`)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function clearChat() {
+  history.length = 0;
+  const box = document.getElementById('messages');
+  box.innerHTML = '';
+  appendMsg('assistant', 'Chat cleared. How can I help?');
+}
+
+function setBusy(busy) {
+  document.getElementById('send-btn').disabled = busy;
+  document.getElementById('stop-btn').classList.toggle('show', busy);
+  if (busy) setStatus('gen', '◌ GENERATING…');
+  else      setStatus('ok', '● READY');
+}
+
+function setStatus(type, text) {
+  const el = document.getElementById('status-bar');
+  el.textContent = text;
+  el.className = 'status-bar ' + type;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function autoResize(el) {
+  el.style.height = '';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+window.onload = () => {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('ip')) document.getElementById('srv-ip').value = p.get('ip');
+};
+</script>
+</body>
+</html>

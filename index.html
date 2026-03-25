@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline Survival Kit — Field Manual</title>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   OFFLINE SURVIVAL KIT — FIELD MANUAL
+   Aesthetic: Military operations manual / tactical terminal
+   Self-contained: NO internet dependencies
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg:       #080c08;
+  --bg2:      #0e130e;
+  --bg3:      #141a14;
+  --bg4:      #1a221a;
+  --border:   #243024;
+  --border2:  #2e3e2e;
+  --green:    #5dff82;
+  --green2:   #3ab854;
+  --green3:   rgba(93,255,130,0.08);
+  --amber:    #ffb440;
+  --red:      #ff5252;
+  --blue:     #52aaff;
+  --purple:   #bb88ff;
+  --cyan:     #44e0dd;
+  --text:     #c2d4b2;
+  --text2:    #8fa87a;
+  --muted:    #4a6040;
+  --code-bg:  #060a06;
+  --warn-bg:  rgba(255,180,64,0.06);
+  --warn-bdr: rgba(255,180,64,0.3);
+  --tip-bg:   rgba(93,255,130,0.04);
+  --tip-bdr:  rgba(93,255,130,0.25);
+  --info-bg:  rgba(82,170,255,0.05);
+  --info-bdr: rgba(82,170,255,0.25);
+  --font:     'Consolas','Lucida Console','Courier New',monospace;
+  --sans:     'Trebuchet MS','Segoe UI',Tahoma,sans-serif;
+  --sidebar-w: 260px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13.5px;
+  line-height: 1.7;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.sb-header {
+  padding: 20px 16px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-logo {
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: 2px;
+  line-height: 1.5;
+  white-space: pre;
+  font-weight: bold;
+}
+.sb-sub {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.sb-section {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sb-section-title {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 6px 16px 4px;
+  text-transform: uppercase;
+}
+.sb-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  color: var(--text2);
+  text-decoration: none;
+  font-size: 12px;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.sb-link:hover { color: var(--text); background: var(--bg3); border-left-color: var(--border2); }
+.sb-link.active { color: var(--green); background: var(--green3); border-left-color: var(--green); }
+.sb-link .ch-num {
+  color: var(--muted);
+  font-size: 10px;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.sb-file-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  color: var(--amber);
+  text-decoration: none;
+  font-size: 11px;
+}
+.sb-file-link:hover { color: #ffd080; }
+.sb-file-link .ficon { font-size: 12px; }
+
+.sb-footer {
+  padding: 14px 16px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Mobile sidebar toggle ──────────────────────────────────── */
+#menu-toggle {
+  display: none;
+  position: fixed;
+  top: 12px; left: 12px;
+  z-index: 200;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--green);
+  font-family: var(--font);
+  font-size: 18px;
+  width: 38px; height: 38px;
+  border-radius: 4px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Main Content ───────────────────────────────────────────── */
+#main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 860px;
+  padding: 0 40px 80px;
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.hero {
+  padding: 56px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+.hero-badge {
+  display: inline-block;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--red);
+  font-size: 10px;
+  letter-spacing: 3px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--green);
+  letter-spacing: -1px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.hero h1 span { color: var(--text); }
+.hero-sub {
+  color: var(--text2);
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+.hero-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.hero-tag {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+.quick-start-box {
+  background: var(--bg3);
+  border: 1px solid var(--green2);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 16px 18px;
+}
+.quick-start-box h3 { color: var(--green); font-size: 11px; letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase; }
+.quick-start-box ol { padding-left: 18px; }
+.quick-start-box li { color: var(--text); margin-bottom: 5px; font-size: 13px; }
+.quick-start-box code { color: var(--amber); background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+/* ── Section ────────────────────────────────────────────────── */
+.section {
+  margin-bottom: 60px;
+  scroll-margin-top: 24px;
+}
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.ch-badge {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.section h2 {
+  font-family: var(--sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+.section h3 {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 24px 0 10px;
+}
+.section h4 {
+  color: var(--cyan);
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin: 18px 0 8px;
+}
+.section p { margin-bottom: 12px; color: var(--text); }
+.section ul, .section ol { padding-left: 20px; margin-bottom: 12px; }
+.section li { margin-bottom: 4px; }
+.section a { color: var(--blue); }
+.section a:hover { color: var(--cyan); }
+
+/* ── Callout Boxes ──────────────────────────────────────────── */
+.warn {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-bdr);
+  border-left: 3px solid var(--amber);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.warn::before { content: '⚠ WARNING: '; color: var(--amber); font-weight: bold; }
+
+.tip {
+  background: var(--tip-bg);
+  border: 1px solid var(--tip-bdr);
+  border-left: 3px solid var(--green);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.tip::before { content: '✓ TIP: '; color: var(--green); font-weight: bold; }
+
+.info {
+  background: var(--info-bg);
+  border: 1px solid var(--info-bdr);
+  border-left: 3px solid var(--blue);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.info::before { content: 'ℹ INFO: '; color: var(--blue); font-weight: bold; }
+
+.danger {
+  background: rgba(255,82,82,0.06);
+  border: 1px solid rgba(255,82,82,0.3);
+  border-left: 3px solid var(--red);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.danger::before { content: '✗ DANGER: '; color: var(--red); font-weight: bold; }
+
+/* ── Code ───────────────────────────────────────────────────── */
+code {
+  background: var(--code-bg);
+  color: var(--green);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font);
+  font-size: 12px;
+  border: 1px solid var(--border);
+}
+
+.code-block {
+  position: relative;
+  margin: 14px 0;
+}
+.code-label {
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 5px 12px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.code-label .os-tags { display: flex; gap: 6px; }
+.os-tag {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 0 0 4px 4px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--font);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--green);
+  tab-size: 4;
+}
+pre .comment { color: var(--muted); }
+pre .kw { color: var(--amber); }
+pre .str { color: var(--cyan); }
+pre .cmd { color: var(--green); }
+pre .param { color: var(--purple); }
+pre .ip { color: var(--blue); }
+pre .hl { background: rgba(255,180,64,0.1); display: block; margin: 0 -16px; padding: 0 16px; }
+
+.copy-btn {
+  position: absolute;
+  top: 0; right: 0;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 0 4px 0 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.copy-btn:hover { color: var(--green); border-color: var(--green); }
+.copy-btn.copied { color: var(--green); }
+
+/* ── Tables ─────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 12.5px;
+}
+th {
+  background: var(--bg4);
+  color: var(--amber);
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid var(--border2);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+td {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: var(--bg2); }
+td code { border: none; padding: 1px 4px; }
+
+/* ── Tabs ───────────────────────────────────────────────────── */
+.tab-group { margin: 14px 0; }
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.tab-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  letter-spacing: 1px;
+  margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { background: var(--bg4); color: var(--green); border-color: var(--border2); border-bottom-color: var(--bg4); }
+.tab-pane {
+  display: none;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-top: none;
+  padding: 16px;
+  border-radius: 0 0 4px 4px;
+}
+.tab-pane.active { display: block; }
+.tab-pane pre { margin: 8px 0; border-radius: 4px; }
+
+/* ── File Cards ─────────────────────────────────────────────── */
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.file-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 14px;
+  text-decoration: none;
+  display: block;
+  transition: border-color 0.15s;
+}
+.file-card:hover { border-color: var(--green2); }
+.file-card .fc-icon { font-size: 22px; margin-bottom: 8px; }
+.file-card .fc-name { color: var(--amber); font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+.file-card .fc-path { color: var(--muted); font-size: 10px; letter-spacing: 0.5px; margin-bottom: 6px; font-family: var(--font); }
+.file-card .fc-desc { color: var(--text2); font-size: 11px; line-height: 1.5; }
+.file-card .fc-req { color: var(--muted); font-size: 10px; margin-top: 6px; }
+.file-card .fc-req span { color: var(--purple); }
+
+/* ── Step list ──────────────────────────────────────────────── */
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 14px 0; }
+.steps li {
+  counter-increment: step;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+.steps li::before {
+  content: counter(step);
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  color: var(--green);
+  font-size: 11px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-weight: bold;
+}
+
+/* ── Port table ─────────────────────────────────────────────── */
+.port-row td:first-child { color: var(--cyan); font-family: var(--font); }
+.port-row td:nth-child(2) { color: var(--amber); }
+
+/* ── Divider ────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+
+/* ── Mesh diagram ───────────────────────────────────────────── */
+.mesh-diagram {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--green);
+  text-align: center;
+  margin: 14px 0;
+  overflow-x: auto;
+  white-space: pre;
+  font-family: var(--font);
+  line-height: 1.5;
+}
+
+/* ── Back to top ────────────────────────────────────────────── */
+.back-top {
+  display: inline-block;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: none;
+  letter-spacing: 1px;
+  margin-top: 16px;
+}
+.back-top:hover { color: var(--green); }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 0px; }
+  #sidebar {
+    transform: translateX(-100%);
+    width: 260px;
+    transition: transform 0.25s;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #menu-toggle { display: flex; }
+  #main { margin-left: 0; padding: 0 16px 80px; }
+  .hero { padding: 56px 0 30px; }
+  .hero h1 { font-size: 24px; }
+  .file-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .file-grid { grid-template-columns: 1fr; }
+  pre { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Menu Toggle (mobile) ──────────────────────────────────── -->
+<button id="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+
+<!-- ═══════════════════════ SIDEBAR ══════════════════════════ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">▓ OFFLINE SURVIVAL KIT</div>
+    <div class="sb-sub">Field Operations Manual</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Getting Started</div>
+    <a href="#start"       class="sb-link active"><span class="ch-num">↯</span>Quick Start</a>
+    <a href="#files"       class="sb-link"><span class="ch-num">⊞</span>Included Files</a>
+    <a href="#ports"       class="sb-link"><span class="ch-num">◈</span>Port Reference</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Chapters</div>
+    <a href="#ch-network"  class="sb-link"><span class="ch-num">01</span>Local Networks</a>
+    <a href="#ch-web"      class="sb-link"><span class="ch-num">02</span>Web Server</a>
+    <a href="#ch-ftp"      class="sb-link"><span class="ch-num">03</span>FTP Server</a>
+    <a href="#ch-chat"     class="sb-link"><span class="ch-num">04</span>Chat Server</a>
+    <a href="#ch-ollama"   class="sb-link"><span class="ch-num">05</span>Ollama AI</a>
+    <a href="#ch-domains"  class="sb-link"><span class="ch-num">06</span>Custom Domains</a>
+    <a href="#ch-create"   class="sb-link"><span class="ch-num">07</span>Build a Network</a>
+    <a href="#ch-mesh"     class="sb-link"><span class="ch-num">08</span>Mesh Networking</a>
+    <a href="#ch-wifi"     class="sb-link"><span class="ch-num">09</span>WiFi Expansion</a>
+    <a href="#ch-devices"  class="sb-link"><span class="ch-num">10</span>Device Guides</a>
+    <a href="#ch-cmd"      class="sb-link"><span class="ch-num">A1</span>Command Reference</a>
+    <a href="#ch-trouble"  class="sb-link"><span class="ch-num">A2</span>Troubleshooting</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Open UIs</div>
+    <a href="ui/chat_ui.html"   class="sb-file-link" target="_blank"><span class="ficon">💬</span>Chat UI</a>
+    <a href="ui/ollama_ui.html" class="sb-file-link" target="_blank"><span class="ficon">🤖</span>Ollama UI</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Scripts</div>
+    <a href="scripts/serve_site.py"  class="sb-file-link"><span class="ficon">🌐</span>serve_site.py</a>
+    <a href="scripts/ftp_server.py"  class="sb-file-link"><span class="ficon">📁</span>ftp_server.py</a>
+    <a href="scripts/chat_server.py" class="sb-file-link"><span class="ficon">💬</span>chat_server.py</a>
+    <a href="scripts/ollama_proxy.py" class="sb-file-link"><span class="ficon">🤖</span>ollama_proxy.py</a>
+    <a href="scripts/setup_hosts.py" class="sb-file-link"><span class="ficon">🔧</span>setup_hosts.py</a>
+  </div>
+
+  <div class="sb-footer">
+    No internet required.<br>
+    All content is self-contained.<br>
+    Python 3.6+ required for scripts.
+  </div>
+</nav>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════════════ -->
+<main id="main">
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<div class="hero" id="start">
+  <div class="hero-badge">⚡ NO INTERNET REQUIRED</div>
+  <h1>OFFLINE<br><span>SURVIVAL KIT</span></h1>
+  <div class="hero-sub">FIELD MANUAL — LOCAL NETWORK INFRASTRUCTURE</div>
+  <div class="hero-tags">
+    <span class="hero-tag">📡 LAN NETWORKING</span>
+    <span class="hero-tag">🤖 LOCAL AI</span>
+    <span class="hero-tag">💬 GROUP CHAT</span>
+    <span class="hero-tag">📁 FILE SHARING</span>
+    <span class="hero-tag">🌐 WEB HOSTING</span>
+    <span class="hero-tag">🔗 MESH NETWORK</span>
+    <span class="hero-tag">🖥 WIN + LINUX + ANDROID</span>
+  </div>
+
+  <div class="quick-start-box">
+    <h3>⚡ 60-Second Quick Start</h3>
+    <ol>
+      <li>Make sure <strong>Python 3</strong> is installed on the host machine</li>
+      <li>Open terminal in this kit's folder</li>
+      <li>Run: <code>python scripts/serve_site.py</code></li>
+      <li>Note the <strong>NETWORK</strong> IP shown (e.g. <code>http://192.168.1.5:8080</code>)</li>
+      <li>On any other device on the same network, open that address in a browser</li>
+      <li>You now have access to this manual and all files from any device</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     INCLUDED FILES
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="files">
+  <div class="section-header">
+    <span class="ch-badge">⊞ KIT</span>
+    <h2>Included Files</h2>
+  </div>
+  <p>This survival kit contains everything you need to run a complete local network infrastructure. All files are in the kit folder. No downloads required — everything works offline.</p>
+
+  <h3>🌐 Server Scripts</h3>
+  <div class="file-grid">
+    <a href="scripts/serve_site.py" class="file-card">
+      <div class="fc-icon">🌐</div>
+      <div class="fc-name">serve_site.py</div>
+      <div class="fc-path">scripts/serve_site.py</div>
+      <div class="fc-desc">HTTP web server. Hosts this manual and any files on your LAN. Devices connect via browser.</div>
+      <div class="fc-req">Requires: <span>Python 3 (built-in)</span></div>
+    </a>
+    <a href="scripts/ftp_server.py" class="file-card">
+      <div class="fc-icon">📁</div>
+      <div class="fc-name">ftp_server.py</div>
+      <div class="fc-path">scripts/ftp_server.py</div>
+      <div class="fc-desc">FTP file server. Upload/download files from any device including Android and Windows.</div>
+      <div class="fc-req">Requires: <span>pip install pyftpdlib</span></div>
+    </a>
+    <a href="scripts/chat_server.py" class="file-card">
+      <div class="fc-icon">💬</div>
+      <div class="fc-name">chat_server.py</div>
+      <div class="fc-path">scripts/chat_server.py</div>
+      <div class="fc-desc">WebSocket chat server. Multi-room LAN chat. Use with chat_ui.html on any browser.</div>
+      <div class="fc-req">Requires: <span>pip install websockets</span></div>
+    </a>
+    <a href="scripts/ollama_proxy.py" class="file-card">
+      <div class="fc-icon">🤖</div>
+      <div class="fc-name">ollama_proxy.py</div>
+      <div class="fc-path">scripts/ollama_proxy.py</div>
+      <div class="fc-desc">Bridges Ollama AI to your entire LAN with CORS support. Use with ollama_ui.html.</div>
+      <div class="fc-req">Requires: <span>pip install flask flask-cors requests</span></div>
+    </a>
+    <a href="scripts/setup_hosts.py" class="file-card">
+      <div class="fc-icon">🔧</div>
+      <div class="fc-name">setup_hosts.py</div>
+      <div class="fc-path">scripts/setup_hosts.py</div>
+      <div class="fc-desc">Adds custom domain names (survival.local, chat.local) to any device's hosts file.</div>
+      <div class="fc-req">Requires: <span>Admin/root (Python built-in)</span></div>
+    </a>
+  </div>
+
+  <h3>🖥 Web Interfaces</h3>
+  <div class="file-grid">
+    <a href="ui/chat_ui.html" class="file-card" target="_blank">
+      <div class="fc-icon">💬</div>
+      <div class="fc-name">chat_ui.html</div>
+      <div class="fc-path">ui/chat_ui.html</div>
+      <div class="fc-desc">Full LAN chat interface. Multi-room, private messages, command support. Works in any browser.</div>
+      <div class="fc-req">Requires: <span>chat_server.py running</span></div>
+    </a>
+    <a href="ui/ollama_ui.html" class="file-card" target="_blank">
+      <div class="fc-icon">🤖</div>
+      <div class="fc-name">ollama_ui.html</div>
+      <div class="fc-path">ui/ollama_ui.html</div>
+      <div class="fc-desc">AI chat interface for Ollama. Streaming responses, model selection, system prompts. Fully offline.</div>
+      <div class="fc-req">Requires: <span>Ollama + ollama_proxy.py</span></div>
+    </a>
+  </div>
+
+  <h3>📦 Install All Dependencies</h3>
+  <div class="code-block">
+    <div class="code-label">INSTALL ALL PYTHON PACKAGES AT ONCE <div class="os-tags"><span class="os-tag">Windows</span><span class="os-tag">Linux</span><span class="os-tag">Mac</span></div></div>
+    <pre>pip install pyftpdlib websockets flask flask-cors requests</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+  <div class="tip">On some Linux systems use <code>pip3</code> instead of <code>pip</code>. On Android (Termux), use <code>pkg install python</code> then <code>pip install …</code></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PORT REFERENCE
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ports">
+  <div class="section-header">
+    <span class="ch-badge">◈ REF</span>
+    <h2>Port Reference</h2>
+  </div>
+  <p>All services in this kit and their default ports:</p>
+  <table>
+    <tr><th>Port</th><th>Service</th><th>Protocol</th><th>How to Access</th></tr>
+    <tr class="port-row"><td>8080</td><td>Web Server (Manual + Files)</td><td>HTTP</td><td>Browser → <code>http://IP:8080</code></td></tr>
+    <tr class="port-row"><td>2121</td><td>FTP File Server</td><td>FTP</td><td>File manager or <code>ftp IP 2121</code></td></tr>
+    <tr class="port-row"><td>8765</td><td>Chat Server</td><td>WebSocket</td><td>Open <code>chat_ui.html</code> in browser</td></tr>
+    <tr class="port-row"><td>11434</td><td>Ollama (direct)</td><td>HTTP</td><td>Only on server machine (localhost)</td></tr>
+    <tr class="port-row"><td>11435</td><td>Ollama Proxy (LAN)</td><td>HTTP</td><td>Open <code>ollama_ui.html</code> in browser</td></tr>
+    <tr class="port-row"><td>60000–60100</td><td>FTP Passive Mode</td><td>FTP</td><td>Opened automatically by FTP server</td></tr>
+  </table>
+  <div class="info">These are all default ports. You can change them by passing <code>--port XXXX</code> when starting any script.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 1: LOCAL NETWORKS
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-network">
+  <div class="section-header">
+    <span class="ch-badge">CH 01</span>
+    <h2>Understanding Local Networks</h2>
+  </div>
+
+  <p>A <strong>Local Area Network (LAN)</strong> is a group of devices connected together in the same physical location — your home, building, or campus. When the internet is down, devices on the same LAN can still communicate with each other at full speed.</p>
+
+  <h3>Key Concepts</h3>
+  <table>
+    <tr><th>Term</th><th>Meaning</th><th>Example</th></tr>
+    <tr><td>IP Address</td><td>Unique number for each device on the network</td><td><code>192.168.1.5</code></td></tr>
+    <tr><td>Subnet</td><td>Group of IPs that can talk to each other directly</td><td><code>192.168.1.0/24</code></td></tr>
+    <tr><td>Gateway/Router</td><td>Device that connects local network to internet (or other networks)</td><td><code>192.168.1.1</code></td></tr>
+    <tr><td>DHCP</td><td>Router automatically assigns IPs to devices</td><td>Most routers do this</td></tr>
+    <tr><td>MAC Address</td><td>Hardware ID burned into every network adapter</td><td><code>AA:BB:CC:DD:EE:FF</code></td></tr>
+    <tr><td>Port</td><td>Number that identifies a specific service on a device</td><td><code>:8080</code></td></tr>
+    <tr><td>DNS</td><td>Translates names to IPs. Won't work offline unless you set it up!</td><td>survival.local → 192.168.1.5</td></tr>
+  </table>
+
+  <h3>Find Your IP Address</h3>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'ip-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'ip-linux')">Linux</button>
+      <button class="tab-btn" onclick="switchTab(this,'ip-mac')">Mac</button>
+      <button class="tab-btn" onclick="switchTab(this,'ip-android')">Android</button>
+    </div>
+    <div class="tab-pane active" id="ip-win">
+      <pre>ipconfig</pre>
+      <p>Look for <code>IPv4 Address</code> under your network adapter (usually starts with <code>192.168.</code>)</p>
+    </div>
+    <div class="tab-pane" id="ip-linux">
+      <pre>ip a
+# or
+hostname -I</pre>
+      <p>Look for <code>inet 192.168.x.x</code> next to <code>eth0</code> or <code>wlan0</code></p>
+    </div>
+    <div class="tab-pane" id="ip-mac">
+      <pre>ifconfig | grep inet
+# or
+ipconfig getifaddr en0</pre>
+    </div>
+    <div class="tab-pane" id="ip-android">
+      <p>Settings → WiFi → Tap your network → <strong>IP Address</strong> is shown in the details<br><br>Or install a network scanner app like "Network Analyzer"</p>
+    </div>
+  </div>
+
+  <h3>Typical Home Network Layout</h3>
+  <div class="mesh-diagram">Router (192.168.1.1) — Internet
+         |
+    ─────┼──────────────────────────────
+    |         |         |          |
+Desktop   Laptop    Phone     Tablet
+192.168.1.2  .3       .8         .9
+(Server)  (Client) (Client)  (Client)</div>
+
+  <div class="info">In a survival scenario without internet, the router still works as a local switch — devices can still talk to each other even though there's no internet connection through it.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 2: WEB SERVER
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-web">
+  <div class="section-header">
+    <span class="ch-badge">CH 02</span>
+    <h2>Web Server</h2>
+  </div>
+  <p>A web server hosts files that any device can access via a browser. This is how you share this manual, HTML tools, and documents across your network.</p>
+
+  <h3>Start the Web Server</h3>
+  <div class="code-block">
+    <div class="code-label">START (serves from kit root on port 8080)</div>
+    <pre>python scripts/serve_site.py</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+  <div class="code-block">
+    <div class="code-label">CUSTOM PORT AND DIRECTORY</div>
+    <pre>python scripts/serve_site.py --port 9090 --dir /path/to/share</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Connect From Other Devices</h3>
+  <ol class="steps">
+    <li>Run the server on the host machine and note the IP shown (e.g. <code>192.168.1.5</code>)</li>
+    <li>Make sure the connecting device is on the <strong>same WiFi or LAN cable</strong></li>
+    <li>Open a browser on the other device</li>
+    <li>Type: <code>http://192.168.1.5:8080</code> (use your actual IP)</li>
+    <li>You'll see the kit's file browser and this manual</li>
+  </ol>
+
+  <div class="warn">Windows Firewall may block connections from other devices. If others can't connect, run: <code>netsh advfirewall firewall add rule name="Survival HTTP" dir=in action=allow protocol=TCP localport=8080</code> — or temporarily disable the firewall.</div>
+
+  <h3>Host Any Website Locally</h3>
+  <p>Put any HTML file in the kit folder. For example, create <code>mysite/index.html</code> and it's accessible at <code>http://192.168.1.5:8080/mysite/</code> from any device.</p>
+
+  <h3>Open on Boot (Linux)</h3>
+  <div class="code-block">
+    <div class="code-label">CREATE SYSTEMD SERVICE — Linux only</div>
+    <pre>sudo nano /etc/systemd/system/survival-web.service
+
+<span class="comment"># Paste this:</span>
+[Unit]
+Description=Offline Survival Kit Web Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /path/to/scripts/serve_site.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+<span class="comment"># Then:</span>
+sudo systemctl enable survival-web
+sudo systemctl start survival-web</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 3: FTP SERVER
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-ftp">
+  <div class="section-header">
+    <span class="ch-badge">CH 03</span>
+    <h2>FTP File Server</h2>
+  </div>
+  <p>FTP (File Transfer Protocol) lets devices upload and download files without a browser. Perfect for sharing large files, backups, and documents across all device types.</p>
+
+  <h3>Install &amp; Start</h3>
+  <div class="code-block">
+    <div class="code-label">INSTALL DEPENDENCY</div>
+    <pre>pip install pyftpdlib</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+  <div class="code-block">
+    <div class="code-label">START FTP SERVER (read + write)</div>
+    <pre>python scripts/ftp_server.py</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+  <div class="code-block">
+    <div class="code-label">READ-ONLY MODE (safer for public sharing)</div>
+    <pre>python scripts/ftp_server.py --readonly</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Default Login</h3>
+  <table>
+    <tr><th>Username</th><th>Password</th><th>Access</th></tr>
+    <tr><td><code>survival</code></td><td><code>offline123</code></td><td>Read + Write (upload/download)</td></tr>
+    <tr><td><code>anonymous</code></td><td>(empty)</td><td>Read only (download only)</td></tr>
+  </table>
+
+  <h3>Connect From Any Device</h3>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'ftp-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'ftp-linux')">Linux</button>
+      <button class="tab-btn" onclick="switchTab(this,'ftp-android')">Android</button>
+      <button class="tab-btn" onclick="switchTab(this,'ftp-filezilla')">FileZilla</button>
+    </div>
+    <div class="tab-pane active" id="ftp-win">
+      <p><strong>Option 1 — File Explorer (easiest):</strong></p>
+      <pre>1. Open File Explorer (Win+E)
+2. Click the address bar
+3. Type: ftp://192.168.1.5:2121
+4. Enter username: survival
+5. Password: offline123</pre>
+      <p><strong>Option 2 — Command line:</strong></p>
+      <pre>ftp 192.168.1.5 2121
+<span class="comment"># Username: survival, Password: offline123</span>
+get filename.txt         <span class="comment"># download a file</span>
+put localfile.txt        <span class="comment"># upload a file</span>
+ls                       <span class="comment"># list files</span>
+bye                      <span class="comment"># exit</span></pre>
+    </div>
+    <div class="tab-pane" id="ftp-linux">
+      <pre><span class="comment"># Install ftp client if needed</span>
+sudo apt install ftp
+
+<span class="comment"># Connect</span>
+ftp 192.168.1.5 2121
+
+<span class="comment"># Or use lftp for better experience</span>
+sudo apt install lftp
+lftp ftp://survival:offline123@192.168.1.5:2121
+
+<span class="comment"># Or mount as filesystem (curlftpfs)</span>
+sudo apt install curlftpfs
+mkdir /mnt/survival
+curlftpfs ftp://survival:offline123@192.168.1.5:2121 /mnt/survival</pre>
+    </div>
+    <div class="tab-pane" id="ftp-android">
+      <p><strong>Recommended apps (download before internet goes down!):</strong></p>
+      <ul>
+        <li><strong>FX File Explorer</strong> — Network → FTP → Add server</li>
+        <li><strong>Solid Explorer</strong> — + → FTP Connection</li>
+        <li><strong>ES File Explorer</strong> — Network → FTP</li>
+        <li><strong>AndFTP</strong> — dedicated FTP client</li>
+      </ul>
+      <p>Settings in any app: <code>Host: 192.168.1.5</code> &nbsp; <code>Port: 2121</code> &nbsp; <code>User: survival</code> &nbsp; <code>Pass: offline123</code></p>
+    </div>
+    <div class="tab-pane" id="ftp-filezilla">
+      <pre>Host     : 192.168.1.5
+Port     : 2121
+Protocol : FTP – File Transfer Protocol
+Logon    : Normal
+Username : survival
+Password : offline123</pre>
+      <p>FileZilla is available for Windows, Linux, and Mac at <code>filezilla-project.org</code></p>
+    </div>
+  </div>
+
+  <div class="warn">FTP sends passwords in plain text. This is fine for local use but never expose FTP to the internet.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 4: CHAT SERVER
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-chat">
+  <div class="section-header">
+    <span class="ch-badge">CH 04</span>
+    <h2>Chat Server</h2>
+  </div>
+  <p>A real-time group chat for your entire local network. Runs in any browser, no app install needed on client devices. Supports multiple rooms, private messages, and message history.</p>
+
+  <h3>Start the Chat Server</h3>
+  <div class="code-block">
+    <div class="code-label">INSTALL &amp; RUN</div>
+    <pre>pip install websockets
+python scripts/chat_server.py</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Connect From Any Device</h3>
+  <ol class="steps">
+    <li>Open the file <code>ui/chat_ui.html</code> in a browser<br><em>— OR —</em><br>If the web server (serve_site.py) is running, go to <code>http://SERVER_IP:8080/ui/chat_ui.html</code></li>
+    <li>Enter the <strong>server IP</strong> (the machine running chat_server.py)</li>
+    <li>Enter your name and choose a room</li>
+    <li>Click <strong>CONNECT</strong></li>
+  </ol>
+
+  <h3>Chat Commands</h3>
+  <table>
+    <tr><th>Command</th><th>What It Does</th></tr>
+    <tr><td><code>/help</code></td><td>Show all commands</td></tr>
+    <tr><td><code>/users</code></td><td>List everyone in current room</td></tr>
+    <tr><td><code>/rooms</code></td><td>List all active rooms</td></tr>
+    <tr><td><code>/join emergency</code></td><td>Switch to a different room</td></tr>
+    <tr><td><code>/nick NewName</code></td><td>Change your display name</td></tr>
+    <tr><td><code>/pm Alpha Hello!</code></td><td>Send a private message to Alpha</td></tr>
+  </table>
+
+  <h3>Default Rooms</h3>
+  <ul>
+    <li><strong>#general</strong> — Main chat for everyone</li>
+    <li><strong>#emergency</strong> — Emergency communications</li>
+    <li><strong>#supply</strong> — Supply and resource coordination</li>
+    <li>You can create any custom room with <code>/join roomname</code></li>
+  </ul>
+
+  <div class="tip">Share the chat_ui.html file over FTP or the web server so others don't need to copy files to their device — they just open a browser link.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 5: OLLAMA AI
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-ollama">
+  <div class="section-header">
+    <span class="ch-badge">CH 05</span>
+    <h2>Ollama AI Server</h2>
+  </div>
+  <p>Run large language AI models completely offline on your local network. One machine runs the AI, and all devices on the network can use it through their browser.</p>
+
+  <div class="danger">You need a machine with decent specs. Minimum: 8GB RAM for 7B models. Use 1B–3B models on 4–6GB RAM machines. No GPU required — CPU works but is slower.</div>
+
+  <h3>Step 1 — Install Ollama</h3>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'ollama-linux')">Linux</button>
+      <button class="tab-btn" onclick="switchTab(this,'ollama-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'ollama-mac')">Mac</button>
+    </div>
+    <div class="tab-pane active" id="ollama-linux">
+      <pre><span class="comment"># Download installer (do this BEFORE internet goes down!)</span>
+curl -fsSL https://ollama.com/install.sh | sh
+
+<span class="comment"># Or download the binary from: https://github.com/ollama/ollama/releases</span>
+<span class="comment"># Extract and copy to /usr/local/bin/ollama</span></pre>
+    </div>
+    <div class="tab-pane" id="ollama-win">
+      <pre><span class="comment"># Download from: https://ollama.com/download/OllamaSetup.exe
+# Run the installer — Ollama installs as a background service
+# Then open PowerShell:</span>
+ollama --version</pre>
+    </div>
+    <div class="tab-pane" id="ollama-mac">
+      <pre><span class="comment"># Download from: https://ollama.com/download/Ollama-darwin.zip
+# Extract and move Ollama.app to /Applications
+# Open it — it will run in the menu bar</span></pre>
+    </div>
+  </div>
+
+  <h3>Step 2 — Download a Model</h3>
+  <div class="warn">Download models NOW while you have internet. Models are large files stored locally after downloading.</div>
+  <table>
+    <tr><th>Model</th><th>Size</th><th>RAM Needed</th><th>Best For</th><th>Command</th></tr>
+    <tr><td><code>llama3.2:1b</code></td><td>1.3 GB</td><td>4 GB+</td><td>Fast answers, low hardware</td><td><code>ollama pull llama3.2:1b</code></td></tr>
+    <tr><td><code>gemma2:2b</code></td><td>1.6 GB</td><td>4 GB+</td><td>Good quality, small</td><td><code>ollama pull gemma2:2b</code></td></tr>
+    <tr><td><code>phi3:mini</code></td><td>2.3 GB</td><td>6 GB+</td><td>Best small model</td><td><code>ollama pull phi3:mini</code></td></tr>
+    <tr><td><code>mistral:7b</code></td><td>4.1 GB</td><td>8 GB+</td><td>Highest quality</td><td><code>ollama pull mistral:7b</code></td></tr>
+    <tr><td><code>llava:7b</code></td><td>4.5 GB</td><td>8 GB+</td><td>Can analyze images</td><td><code>ollama pull llava:7b</code></td></tr>
+  </table>
+
+  <h3>Step 3 — Expose to Network</h3>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'oll-linux')">Linux/Mac</button>
+      <button class="tab-btn" onclick="switchTab(this,'oll-win')">Windows</button>
+    </div>
+    <div class="tab-pane active" id="oll-linux">
+      <pre><span class="comment"># Start Ollama on all interfaces (network-accessible)</span>
+OLLAMA_HOST=0.0.0.0 ollama serve
+
+<span class="comment"># Store models on different disk (save space on main disk)</span>
+OLLAMA_MODELS=/data/models OLLAMA_HOST=0.0.0.0 ollama serve</pre>
+    </div>
+    <div class="tab-pane" id="oll-win">
+      <pre><span class="comment"># In PowerShell or CMD:</span>
+set OLLAMA_HOST=0.0.0.0
+ollama serve
+
+<span class="comment"># Or in PowerShell:</span>
+$env:OLLAMA_HOST="0.0.0.0"
+ollama serve</pre>
+    </div>
+  </div>
+
+  <h3>Step 4 — Start the Proxy</h3>
+  <div class="code-block">
+    <div class="code-label">In a separate terminal window:</div>
+    <pre>pip install flask flask-cors requests
+python scripts/ollama_proxy.py</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Step 5 — Use the AI from Any Device</h3>
+  <ol class="steps">
+    <li>Open <code>ui/ollama_ui.html</code> in any browser on any device</li>
+    <li>Enter the IP of the machine running Ollama (e.g. <code>192.168.1.5</code>)</li>
+    <li>Port: <code>11435</code></li>
+    <li>Click <strong>CONNECT &amp; LOAD MODELS</strong></li>
+    <li>Select a model and start chatting</li>
+  </ol>
+
+  <div class="tip">If you set <code>OLLAMA_HOST=0.0.0.0</code>, you can also skip the proxy and connect directly to port <code>11434</code> from any device.</div>
+
+  <h3>Useful Ollama Commands</h3>
+  <div class="code-block">
+    <div class="code-label">COMMON COMMANDS</div>
+    <pre>ollama list                  <span class="comment"># List installed models</span>
+ollama pull llama3.2:1b      <span class="comment"># Download a model</span>
+ollama run llama3.2:1b       <span class="comment"># Chat in terminal</span>
+ollama rm llama3.2:1b        <span class="comment"># Delete a model</span>
+ollama serve                 <span class="comment"># Start the server</span>
+ollama ps                    <span class="comment"># Show running models</span></pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 6: CUSTOM DOMAINS
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-domains">
+  <div class="section-header">
+    <span class="ch-badge">CH 06</span>
+    <h2>Custom Local Domains</h2>
+  </div>
+  <p>Instead of remembering <code>http://192.168.1.5:8080</code>, you can use friendly names like <code>http://survival.local:8080</code>.</p>
+
+  <h3>Method 1: Hosts File (Simplest)</h3>
+  <p>The hosts file is a local DNS override. Edit it on every device that needs friendly names.</p>
+  <div class="code-block">
+    <div class="code-label">AUTOMATED — Run on each device that needs friendly names</div>
+    <pre><span class="comment"># Windows: Run as Administrator</span>
+<span class="comment"># Linux/Mac: Run with sudo</span>
+python scripts/setup_hosts.py</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">MANUAL — Edit hosts file directly</div>
+    <pre><span class="comment"># Windows hosts file location:</span>
+C:\Windows\System32\drivers\etc\hosts
+
+<span class="comment"># Linux/Mac hosts file:</span>
+/etc/hosts
+
+<span class="comment"># Add these lines (replace 192.168.1.5 with your server IP):</span>
+192.168.1.5  survival.local
+192.168.1.5  chat.local
+192.168.1.5  ai.local
+192.168.1.5  files.local</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Method 2: mDNS / Avahi (Auto-Discovery)</h3>
+  <p>mDNS lets devices find each other by <code>hostname.local</code> automatically — no configuration needed per device.</p>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'mdns-linux')">Linux</button>
+      <button class="tab-btn" onclick="switchTab(this,'mdns-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'mdns-android')">Android</button>
+    </div>
+    <div class="tab-pane active" id="mdns-linux">
+      <pre><span class="comment"># Install Avahi (mDNS daemon)</span>
+sudo apt install avahi-daemon
+
+<span class="comment"># Set your hostname</span>
+sudo hostnamectl set-hostname survival-server
+
+<span class="comment"># Now other Linux/Mac devices can reach you as:</span>
+<span class="comment"># http://survival-server.local:8080</span></pre>
+    </div>
+    <div class="tab-pane" id="mdns-win">
+      <p>Windows 10/11 includes mDNS support built-in. Your computer can be reached as <code>COMPUTERNAME.local</code>. Check your computer name in System Properties.</p>
+    </div>
+    <div class="tab-pane" id="mdns-android">
+      <p>Android supports .local addresses natively on most versions. Try typing <code>survival-server.local</code> in your browser. If it doesn't work, use the IP address instead or use a DNS Changer app.</p>
+    </div>
+  </div>
+
+  <h3>Method 3: Run a DNS Server</h3>
+  <p>For larger networks, run a proper DNS server so all devices get domain names automatically.</p>
+  <div class="code-block">
+    <div class="code-label">DNSMASQ — lightweight DNS for your network</div>
+    <pre><span class="comment"># Install</span>
+sudo apt install dnsmasq
+
+<span class="comment"># Edit config: /etc/dnsmasq.conf</span>
+address=/survival.local/192.168.1.5
+address=/chat.local/192.168.1.5
+address=/ai.local/192.168.1.5
+
+<span class="comment"># Restart</span>
+sudo systemctl restart dnsmasq
+
+<span class="comment"># Tell your router to use this machine as its DNS server
+# Or configure each device to use 192.168.1.5 as DNS</span></pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 7: BUILD A NETWORK
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-create">
+  <div class="section-header">
+    <span class="ch-badge">CH 07</span>
+    <h2>Creating a Local Network</h2>
+  </div>
+
+  <h3>Option A: Use an Existing Router (Easiest)</h3>
+  <p>If you have a WiFi router, even without internet connection it still creates a LAN. Just connect devices to its WiFi or LAN ports. The router acts as a DHCP server assigning IPs automatically.</p>
+
+  <ol class="steps">
+    <li>Plug the router into power</li>
+    <li>Connect devices to its WiFi (network name / SSID is on the router sticker)</li>
+    <li>All connected devices can communicate with each other</li>
+    <li>Find your IP with <code>ipconfig</code> (Windows) or <code>ip a</code> (Linux)</li>
+    <li>Run the server scripts from this kit</li>
+  </ol>
+
+  <h3>Option B: Direct Cable Connection (2 Devices)</h3>
+  <p>Connect two computers directly with an Ethernet cable (use a crossover cable or modern adapters auto-detect).</p>
+  <div class="code-block">
+    <div class="code-label">Set static IPs for direct connection — Linux</div>
+    <pre><span class="comment"># On Machine 1:</span>
+sudo ip addr add 10.0.0.1/24 dev eth0
+sudo ip link set eth0 up
+
+<span class="comment"># On Machine 2:</span>
+sudo ip addr add 10.0.0.2/24 dev eth0
+sudo ip link set eth0 up
+
+<span class="comment"># Test:</span>
+ping 10.0.0.1</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Option C: WiFi Hotspot (Phone as Router)</h3>
+  <p>Any smartphone can create a WiFi hotspot that other devices connect to — no router needed.</p>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'hot-android')">Android</button>
+      <button class="tab-btn" onclick="switchTab(this,'hot-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'hot-linux')">Linux</button>
+    </div>
+    <div class="tab-pane active" id="hot-android">
+      <p>Settings → Network → Hotspot &amp; Tethering → WiFi Hotspot → Turn on<br><br>Set a password, then other devices connect to your phone's hotspot. Your phone will be the gateway (usually at <code>192.168.43.1</code>).</p>
+    </div>
+    <div class="tab-pane" id="hot-win">
+      <pre><span class="comment"># Windows 10/11 — Mobile Hotspot</span>
+Settings → Network &amp; Internet → Mobile Hotspot → On
+
+<span class="comment"># Or via command line:</span>
+netsh wlan set hostednetwork mode=allow ssid="SurvivalNet" key="password123"
+netsh wlan start hostednetwork</pre>
+    </div>
+    <div class="tab-pane" id="hot-linux">
+      <pre><span class="comment"># Using NetworkManager</span>
+nmcli device wifi hotspot ssid "SurvivalNet" password "password123"
+
+<span class="comment"># Or with hostapd (more control)</span>
+sudo apt install hostapd dnsmasq
+<span class="comment"># Configure /etc/hostapd/hostapd.conf</span></pre>
+    </div>
+  </div>
+
+  <h3>Assigning Static IPs (Important for Servers)</h3>
+  <p>Server machines should have a fixed (static) IP so client devices always know where to connect. Otherwise the DHCP server may give a different IP each time.</p>
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'static-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'static-linux')">Linux</button>
+    </div>
+    <div class="tab-pane active" id="static-win">
+      <pre>1. Settings → Network → Adapter Options
+2. Right-click your adapter → Properties
+3. IPv4 → Properties
+4. Set:
+   IP Address  : 192.168.1.5
+   Subnet Mask : 255.255.255.0
+   Gateway     : 192.168.1.1 (your router)
+   DNS         : 192.168.1.1 (or leave blank)</pre>
+    </div>
+    <div class="tab-pane" id="static-linux">
+      <pre><span class="comment"># Permanent — edit /etc/netplan/01-netcfg.yaml (Ubuntu/Debian)</span>
+network:
+  version: 2
+  ethernets:
+    eth0:
+      addresses: [192.168.1.5/24]
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses: [192.168.1.1]
+
+sudo netplan apply
+
+<span class="comment"># Or via NetworkManager:</span>
+nmcli con mod "Wired" ipv4.addresses 192.168.1.5/24
+nmcli con mod "Wired" ipv4.gateway 192.168.1.1
+nmcli con mod "Wired" ipv4.method manual
+nmcli con up "Wired"</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 8: MESH NETWORKING
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-mesh">
+  <div class="section-header">
+    <span class="ch-badge">CH 08</span>
+    <h2>Mesh Networking</h2>
+  </div>
+
+  <h3>What is a Mesh Network?</h3>
+  <p>In a standard network, all devices connect to ONE central router. If the router fails, the whole network dies. In a <strong>mesh network</strong>, every device is also a router — there is no single point of failure.</p>
+
+  <div class="mesh-diagram">STANDARD NETWORK:              MESH NETWORK:
+
+   [Router]                     [Node A]──[Node B]
+   /  |  \                         \    X    /
+  A   B   C                     [Node C]──[Node D]
+ (if router dies → all die)    (any path can route
+                                around broken nodes)</div>
+
+  <h3>Why Use a Mesh Network?</h3>
+  <ul>
+    <li><strong>Range extension:</strong> Each node extends WiFi range — a chain can span kilometers</li>
+    <li><strong>No single point of failure:</strong> If one node dies, traffic reroutes automatically</li>
+    <li><strong>Scalability:</strong> Add more nodes to expand coverage</li>
+    <li><strong>Resilience:</strong> Critical for disaster/war scenarios where infrastructure is destroyed</li>
+    <li><strong>Self-healing:</strong> Network finds the best path automatically</li>
+  </ul>
+
+  <h3>The Chain Effect — Long Range</h3>
+  <p>Devices in a mesh relay messages through each other. A signal can travel:</p>
+  <div class="mesh-diagram">House ──[300m]── Relay Node ──[300m]── Another House ──[300m]── ...
+  (WiFi range)                (battery-powered)
+  Each hop extends range by ~300m (outdoor)
+  10 nodes = ~3km coverage chain</div>
+
+  <h3>Software Mesh: batman-adv (Linux)</h3>
+  <p>B.A.T.M.A.N. Advanced (Better Approach To Mobile Adhoc Networking) is the best open-source mesh protocol, built into the Linux kernel.</p>
+  <div class="code-block">
+    <div class="code-label">SETUP BATMAN-ADV MESH — Linux (each node)</div>
+    <pre><span class="comment"># Install</span>
+sudo apt install batctl
+
+<span class="comment"># Load kernel module</span>
+sudo modprobe batman-adv
+
+<span class="comment"># Configure wireless adapter for ad-hoc mode</span>
+sudo ip link set wlan0 down
+sudo iw dev wlan0 set type ibss
+sudo ip link set wlan0 up
+sudo iw dev wlan0 ibss join "SurvivalMesh" 2412
+
+<span class="comment"># Add wlan0 to batman-adv</span>
+sudo batctl if add wlan0
+
+<span class="comment"># Bring up the batman interface</span>
+sudo ip link set bat0 up
+sudo ip addr add 10.0.0.X/8 dev bat0   <span class="comment"># unique IP per node</span>
+
+<span class="comment"># Check mesh status</span>
+sudo batctl n     <span class="comment"># show neighbors</span>
+sudo batctl o     <span class="comment"># show routing table</span></pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Easy Mesh with OpenWRT Routers</h3>
+  <p>If you have spare WiFi routers, flash them with OpenWRT firmware and enable BATMAN-ADV or 802.11s mesh mode. This is the most robust approach.</p>
+  <div class="code-block">
+    <div class="code-label">OPENWRT MESH SETUP (on each router)</div>
+    <pre><span class="comment"># SSH into the router (default: ssh root@192.168.1.1)</span>
+opkg update
+opkg install kmod-batman-adv batctl
+
+<span class="comment"># Configure /etc/config/network</span>
+config interface 'mesh'
+    option proto 'batadv'
+    option mesh 'bat0'
+
+config interface 'bat0_dev'
+    option proto 'batadv_hardif'
+    option master 'mesh'
+    option mtu '1536'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Meshtastic — Long-Range Radio Mesh</h3>
+  <p>For truly long-range mesh (without WiFi), <strong>Meshtastic</strong> uses cheap LoRa radio modules (€10–€30 each) that can reach 5–15km per hop in open terrain.</p>
+  <table>
+    <tr><th>Feature</th><th>Details</th></tr>
+    <tr><td>Range per hop</td><td>5–15 km (open terrain), 1–2 km (urban)</td></tr>
+    <tr><td>Battery life</td><td>Days to weeks on small battery</td></tr>
+    <tr><td>Works without</td><td>WiFi, internet, mobile networks</td></tr>
+    <tr><td>Devices</td><td>TTGO T-Beam, Heltec WiFi LoRa 32, LilyGo T3S3</td></tr>
+    <tr><td>App</td><td>Meshtastic app (Android/iOS) via Bluetooth</td></tr>
+    <tr><td>Protocol</td><td>LoRa + custom mesh routing</td></tr>
+  </table>
+
+  <h3>Quick Mesh Design Rules</h3>
+  <ul>
+    <li>Nodes should be <strong>line-of-sight</strong> for maximum range</li>
+    <li>Elevate nodes (rooftops, hills) for much better range</li>
+    <li>Use directional antennas between fixed nodes, omnidirectional for user access</li>
+    <li>Assign static IP addresses to each node (no DHCP server needed in mesh)</li>
+    <li>Plan for battery or solar power at each node for resilience</li>
+    <li>Always have at least 2 paths between important nodes</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 9: WIFI EXPANSION
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-wifi">
+  <div class="section-header">
+    <span class="ch-badge">CH 09</span>
+    <h2>WiFi Router Integration</h2>
+  </div>
+  <p>Adding routers to your network extends wireless coverage to more devices without cables.</p>
+
+  <h3>Mode 1: Router as Access Point (Recommended)</h3>
+  <p>Connect a second router via Ethernet to your main router/switch. Configure it as an access point (AP) — it extends WiFi without creating a separate network.</p>
+  <ol class="steps">
+    <li>Connect Ethernet cable: <strong>LAN port of main router → LAN port of second router</strong> (not WAN/Internet port)</li>
+    <li>Log into second router admin panel (usually at <code>192.168.1.1</code> or <code>192.168.0.1</code>)</li>
+    <li>Disable DHCP server on the second router (very important — only one DHCP server per network)</li>
+    <li>Set a static IP for the second router (e.g. <code>192.168.1.2</code>)</li>
+    <li>Set the WiFi SSID and password (can be same as main router for seamless roaming)</li>
+    <li>Devices connecting to either router are on the same network</li>
+  </ol>
+
+  <h3>Mode 2: Router as Repeater/Extender</h3>
+  <p>Some routers support WDS (Wireless Distribution System) or repeater mode to extend WiFi wirelessly — no cable needed.</p>
+  <div class="warn">Wireless repeaters halve bandwidth at each hop. Use wired access points when possible for better performance.</div>
+
+  <h3>Mode 3: Multiple Separate Networks (Routing)</h3>
+  <p>For larger setups (different buildings, floors), each router creates its own subnet. You'll need to configure routing between them.</p>
+  <div class="mesh-diagram">Building A          Building B          Building C
+192.168.1.0/24      192.168.2.0/24      192.168.3.0/24
+[Router A] ──── [Central Switch] ──── [Router B]
+                       |
+                   [Router C]</pre></div>
+
+  <h3>Switch vs Router vs Access Point</h3>
+  <table>
+    <tr><th>Device</th><th>What It Does</th><th>When to Use</th></tr>
+    <tr><td>Switch</td><td>Connects multiple devices with cables, one network</td><td>Wired expansion, more ports</td></tr>
+    <tr><td>Router</td><td>Connects networks together, has DHCP</td><td>Creating a new network segment</td></tr>
+    <tr><td>Access Point</td><td>WiFi radio connected to existing network</td><td>Extending wireless coverage</td></tr>
+  </table>
+
+  <h3>Channel Planning (Reduce Interference)</h3>
+  <table>
+    <tr><th>2.4 GHz non-overlapping channels</th><th>5 GHz</th></tr>
+    <tr><td>Channels 1, 6, 11</td><td>Many non-overlapping channels (36, 40, 44, 48…)</td></tr>
+  </table>
+  <div class="tip">Set neighboring access points to different non-overlapping channels. 5 GHz has shorter range but much less interference and higher speed — prefer it for high-density areas.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CH 10: DEVICE GUIDES
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-devices">
+  <div class="section-header">
+    <span class="ch-badge">CH 10</span>
+    <h2>Device-Specific Guides</h2>
+  </div>
+
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'dev-android')">Android</button>
+      <button class="tab-btn" onclick="switchTab(this,'dev-win')">Windows</button>
+      <button class="tab-btn" onclick="switchTab(this,'dev-linux')">Linux</button>
+      <button class="tab-btn" onclick="switchTab(this,'dev-termux')">Termux (Android)</button>
+    </div>
+    <div class="tab-pane active" id="dev-android">
+      <h4>Android — As a Client (Access Services)</h4>
+      <ul>
+        <li>Connect to WiFi network</li>
+        <li>Open browser → type server IP address</li>
+        <li>FTP: Use FX File Explorer, Solid Explorer, or ES File Explorer</li>
+        <li>Chat: Open <code>chat_ui.html</code> in browser</li>
+        <li>Ollama AI: Open <code>ollama_ui.html</code> in browser</li>
+      </ul>
+      <h4>Android — As a Server (Run Scripts)</h4>
+      <p>Install <strong>Termux</strong> from F-Droid (more stable than Play Store version):</p>
+      <pre>pkg install python
+pip install pyftpdlib websockets flask flask-cors requests
+<span class="comment"># Then run any server script</span>
+python serve_site.py</pre>
+      <h4>Android Hotspot</h4>
+      <p>Settings → Connections → Mobile Hotspot and Tethering → Mobile Hotspot → On</p>
+      <p>Android hotspot typically gives IPs in the <code>192.168.43.x</code> range. Your phone is at <code>192.168.43.1</code>.</p>
+    </div>
+
+    <div class="tab-pane" id="dev-win">
+      <h4>Windows — Run Scripts</h4>
+      <pre><span class="comment"># Install Python from python.org (download before internet goes down!)</span>
+<span class="comment"># Then in Command Prompt or PowerShell:</span>
+
+cd C:\path\to\offline-survival-kit
+python scripts\serve_site.py
+
+<span class="comment"># Allow through Windows Firewall when prompted</span></pre>
+      <h4>Windows — FTP Client</h4>
+      <pre><span class="comment"># Open File Explorer address bar:</span>
+ftp://192.168.1.5:2121
+
+<span class="comment"># Command line:</span>
+ftp 192.168.1.5 2121</pre>
+      <h4>Windows — Find IP</h4>
+      <pre>ipconfig /all
+<span class="comment"># Look for IPv4 Address under your network adapter</span></pre>
+      <h4>Windows Firewall — Allow Ports</h4>
+      <pre><span class="comment"># Run as Administrator:</span>
+netsh advfirewall firewall add rule name="Survival Web" dir=in action=allow protocol=TCP localport=8080
+netsh advfirewall firewall add rule name="Survival FTP" dir=in action=allow protocol=TCP localport=2121
+netsh advfirewall firewall add rule name="Survival Chat" dir=in action=allow protocol=TCP localport=8765
+netsh advfirewall firewall add rule name="Survival AI" dir=in action=allow protocol=TCP localport=11435</pre>
+    </div>
+
+    <div class="tab-pane" id="dev-linux">
+      <h4>Linux — Run Scripts</h4>
+      <pre><span class="comment"># Debian/Ubuntu — Install Python (if not present)</span>
+sudo apt update
+sudo apt install python3 python3-pip
+
+<span class="comment"># Run any script</span>
+cd /path/to/offline-survival-kit
+python3 scripts/serve_site.py</pre>
+      <h4>Linux — Firewall (allow ports)</h4>
+      <pre><span class="comment"># UFW</span>
+sudo ufw allow 8080/tcp
+sudo ufw allow 2121/tcp
+sudo ufw allow 8765/tcp
+sudo ufw allow 11435/tcp
+
+<span class="comment"># iptables (if no ufw)</span>
+sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT</pre>
+      <h4>Linux — Scan Network for Devices</h4>
+      <pre><span class="comment"># Install nmap</span>
+sudo apt install nmap
+
+<span class="comment"># Scan your subnet</span>
+nmap -sn 192.168.1.0/24
+
+<span class="comment"># Or use arp</span>
+arp -a</pre>
+    </div>
+
+    <div class="tab-pane" id="dev-termux">
+      <h4>Termux — Full Linux on Android (No Root)</h4>
+      <p>Termux gives you a Linux command line on Android. You can run Python scripts as servers directly from your phone.</p>
+      <pre><span class="comment"># Install Termux from F-Droid (f-droid.org)</span>
+<span class="comment"># Not the Play Store version — that one is outdated!</span>
+
+<span class="comment"># First run in Termux:</span>
+pkg update && pkg upgrade
+pkg install python git openssh
+
+<span class="comment"># Install Python packages</span>
+pip install pyftpdlib websockets flask flask-cors requests
+
+<span class="comment"># Give Termux storage access</span>
+termux-setup-storage
+
+<span class="comment"># Navigate to kit folder (if on SD card)</span>
+cd /sdcard/offline-survival-kit
+
+<span class="comment"># Run server (phone becomes server!)</span>
+python scripts/serve_site.py</pre>
+      <div class="tip">With Termux, a cheap Android phone becomes a complete survival server running web, FTP, chat, and AI services — even on battery power.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     A1: COMMAND REFERENCE
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-cmd">
+  <div class="section-header">
+    <span class="ch-badge">A1</span>
+    <h2>Command Reference</h2>
+  </div>
+
+  <h3>Kit Scripts</h3>
+  <div class="code-block">
+    <div class="code-label">ALL LAUNCH COMMANDS</div>
+    <pre><span class="comment"># Web server (port 8080)</span>
+python scripts/serve_site.py
+
+<span class="comment"># FTP server (port 2121)</span>
+python scripts/ftp_server.py
+
+<span class="comment"># Chat server (port 8765)</span>
+python scripts/chat_server.py
+
+<span class="comment"># Ollama proxy (port 11435) — start after ollama serve</span>
+python scripts/ollama_proxy.py
+
+<span class="comment"># Setup custom domains</span>
+python scripts/setup_hosts.py   <span class="comment"># (as admin/sudo)</span>
+
+<span class="comment"># All at once — Linux (background processes)</span>
+python scripts/serve_site.py &amp;
+python scripts/ftp_server.py &amp;
+python scripts/chat_server.py &amp;
+python scripts/ollama_proxy.py &amp;
+echo "All servers started"</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <h3>Network Diagnostics</h3>
+  <div class="code-block">
+    <div class="code-label">DIAGNOSE NETWORK ISSUES</div>
+    <pre><span class="comment"># Find your IP</span>
+ipconfig              <span class="comment"># Windows</span>
+ip a                  <span class="comment"># Linux</span>
+
+<span class="comment"># Test if a device is reachable</span>
+ping 192.168.1.5
+
+<span class="comment"># Test if a port is open</span>
+telnet 192.168.1.5 8080       <span class="comment"># Windows (enable telnet in features)</span>
+nc -zv 192.168.1.5 8080       <span class="comment"># Linux</span>
+
+<span class="comment"># Scan all devices on network</span>
+nmap -sn 192.168.1.0/24       <span class="comment"># Linux</span>
+arp -a                         <span class="comment"># Any OS</span>
+
+<span class="comment"># Show routing table</span>
+route print                    <span class="comment"># Windows</span>
+ip route                       <span class="comment"># Linux</span>
+
+<span class="comment"># Show all open ports on this machine</span>
+netstat -tulnp                 <span class="comment"># Linux</span>
+netstat -ano                   <span class="comment"># Windows</span></pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     A2: TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="ch-trouble">
+  <div class="section-header">
+    <span class="ch-badge">A2</span>
+    <h2>Troubleshooting</h2>
+  </div>
+
+  <table>
+    <tr><th>Problem</th><th>Likely Cause</th><th>Fix</th></tr>
+    <tr><td>Other devices can't reach the server</td><td>Firewall blocking port</td><td>Add firewall exception for port 8080/2121/8765/11435</td></tr>
+    <tr><td>Server shows wrong IP</td><td>Multiple network adapters</td><td>Use <code>ipconfig</code>/<code>ip a</code> to find the right IP and connect to it manually</td></tr>
+    <tr><td>FTP connects but can't see files</td><td>Wrong directory set</td><td>Run <code>ftp_server.py --dir /path/to/share</code></td></tr>
+    <tr><td>Chat UI says "connection refused"</td><td>chat_server.py not running</td><td>Start <code>python scripts/chat_server.py</code> first</td></tr>
+    <tr><td>Ollama UI can't connect</td><td>Proxy not running / wrong port</td><td>Start <code>ollama_proxy.py</code>, check port is 11435</td></tr>
+    <tr><td>Ollama says "model not found"</td><td>Model not downloaded</td><td>Run <code>ollama pull llama3.2:1b</code></td></tr>
+    <tr><td>Custom domains not working</td><td>Hosts file not updated</td><td>Run <code>setup_hosts.py</code> as admin on each device</td></tr>
+    <tr><td>Python not found</td><td>Not installed or wrong version</td><td>Install Python 3.6+ from python.org; use <code>python3</code> on Linux</td></tr>
+    <tr><td>pip install fails (offline)</td><td>No internet</td><td>Use <code>pip install --find-links /offline-packages pyftpdlib</code> with pre-downloaded wheels</td></tr>
+    <tr><td>Android can't reach server</td><td>Not on same network</td><td>Check phone is on same WiFi; try disabling mobile data</td></tr>
+    <tr><td>Very slow Ollama responses</td><td>Model too large for RAM</td><td>Use smaller model: <code>ollama pull llama3.2:1b</code></td></tr>
+  </table>
+
+  <h3>Download Python Packages Offline</h3>
+  <p>Before the internet goes down, download all needed packages as <code>.whl</code> files so you can install them offline later:</p>
+  <div class="code-block">
+    <div class="code-label">DOWNLOAD PACKAGES WHILE ONLINE (on any machine)</div>
+    <pre><span class="comment"># Download all wheels to a folder</span>
+pip download pyftpdlib websockets flask flask-cors requests -d ./offline-packages
+
+<span class="comment"># Later, install from that folder (offline):</span>
+pip install --no-index --find-links=./offline-packages pyftpdlib websockets flask flask-cors requests</pre>
+    <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+  </div>
+
+  <a href="#start" class="back-top">↑ Back to Top</a>
+</div>
+
+</main><!-- /main -->
+
+<script>
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(btn, id) {
+  const group = btn.closest('.tab-group');
+  group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  group.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const pane = document.getElementById(id);
+  if (pane) pane.classList.add('active');
+}
+
+// ── Copy code ─────────────────────────────────────────────────────────────────
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1500);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✓ COPIED';
+    setTimeout(() => btn.textContent = 'COPY', 1500);
+  });
+}
+
+// ── Mobile sidebar ────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// Close sidebar when clicking main on mobile
+document.getElementById('main').addEventListener('click', () => {
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+});
+
+// ── Active sidebar link on scroll ────────────────────────────────────────────
+const sections = document.querySelectorAll('.section[id], .hero[id]');
+const sbLinks  = document.querySelectorAll('#sidebar .sb-link');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      sbLinks.forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-30% 0px -65% 0px' });
+
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
