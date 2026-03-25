@@ -1,0 +1,13 @@
+# Offline Survival Kit — Python Dependencies
+# Install all: pip install -r requirements.txt
+
+# FTP server
+pyftpdlib>=1.5.7
+
+# Chat server (WebSocket)
+websockets>=11.0
+
+# Ollama proxy (HTTP bridge)
+flask>=2.3.0
+flask-cors>=4.0.0
+requests>=2.31.0

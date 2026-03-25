@@ -1,0 +1,96 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  OLLAMA MODELFILE — Qwen2.5 1.5B (Offline Survival Kit)    ║
+# ║  Model: qwen2.5-1.5b.gguf                                  ║
+# ║  Usage: ollama create survival-ai -f Modelfile             ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# IMPORTANT: This file must be in the SAME folder as the .gguf file
+# OR use the full path in FROM below.
+#
+# PLACE THIS FILE at:
+#   D:\sirvival\offline-survival-kit\Modelfile
+# AND copy the .gguf here too, OR update the FROM path below.
+
+FROM ./qwen2.5-1.5b.gguf
+
+# ── Model identity ────────────────────────────────────────────────────────────
+# This is shown in the Ollama UI when the model is selected
+
+# ── Context window ────────────────────────────────────────────────────────────
+# Qwen2.5-1.5B supports up to 32768 tokens context
+# Lower = faster responses, uses less RAM
+# Higher = remembers more of the conversation
+PARAMETER num_ctx 4096
+
+# ── Response quality tuning ───────────────────────────────────────────────────
+# temperature: 0.0 = robotic/deterministic, 1.0 = very creative
+# 0.7 is a good balance for a survival assistant
+PARAMETER temperature 0.7
+
+# top_p: nucleus sampling — keeps responses focused
+# 0.9 is a safe default
+PARAMETER top_p 0.9
+
+# top_k: limits vocabulary selection per token
+# 40 is standard, lower = more predictable answers
+PARAMETER top_k 40
+
+# repeat_penalty: prevents the model from repeating itself
+# 1.1 is a mild penalty — good default
+PARAMETER repeat_penalty 1.1
+
+# num_predict: max tokens in ONE response (-1 = no limit)
+# 512 is fast, 1024 is detailed, -1 is unlimited
+PARAMETER num_predict 512
+
+# ── System Prompt ─────────────────────────────────────────────────────────────
+# This is the "personality" of your AI — edit freely!
+# The model will always behave according to this prompt.
+
+SYSTEM """
+You are a practical offline survival assistant running on a local network with no internet access.
+
+Your role is to help people with:
+- Local network setup and troubleshooting (WiFi, LAN, IP addresses, routers)
+- Running servers offline (web server, FTP, chat, Ollama)
+- Medical first aid and emergency health guidance
+- Food, water, and shelter survival skills
+- Electronics and hardware repair tips
+- Ham radio and alternative communications
+- Power generation (solar, batteries, generators)
+- Navigation without GPS
+- General problem-solving in resource-limited situations
+
+Guidelines:
+- Give SHORT, DIRECT answers first. Add detail only if asked.
+- Use numbered steps for procedures.
+- When unsure, say so clearly — do not guess on medical or safety topics.
+- Assume the user may be a beginner unless they indicate otherwise.
+- This is an offline system — never suggest checking a website or internet resource.
+- All answers must be actionable with locally available resources.
+"""
+
+# ── Response template ─────────────────────────────────────────────────────────
+# Controls how the model formats its output.
+# Qwen2.5 uses ChatML format natively.
+
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+<|im_start|>assistant
+{{ end }}{{ .Response }}<|im_end|>
+"""
+
+# ── Stop tokens ───────────────────────────────────────────────────────────────
+# Tell the model when to stop generating
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|endoftext|>"
+
+# ── License ───────────────────────────────────────────────────────────────────
+LICENSE """
+Qwen2.5 is released by Alibaba Cloud under the Qwen License.
+For personal/research use: https://huggingface.co/Qwen/Qwen2.5-1.5B
+This Modelfile configuration is free to use and modify.
+"""

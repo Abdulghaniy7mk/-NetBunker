@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAN Chat — Offline Survival Kit</title>
+<style>
+  :root {
+    --bg:       #0b0f0b;
+    --bg2:      #111811;
+    --bg3:      #182018;
+    --border:   #2a3a2a;
+    --green:    #5aff7a;
+    --amber:    #ffb347;
+    --red:      #ff5555;
+    --blue:     #55aaff;
+    --text:     #c8d4b8;
+    --muted:    #5a6a4a;
+    --sys:      #3a5040;
+    --font:     'Consolas','Courier New',monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; }
+
+  /* ── Connect Screen ───────────────────────────────────────── */
+  #connect-screen {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; flex-direction: column; gap: 20px; padding: 20px;
+  }
+  .logo {
+    font-size: 11px; color: var(--green); letter-spacing: 2px;
+    line-height: 1.4; text-align: center; white-space: pre;
+  }
+  .connect-box {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px 32px; width: 100%; max-width: 400px;
+  }
+  .connect-box h2 {
+    color: var(--green); font-size: 13px; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; color: var(--muted); font-size: 11px; letter-spacing: 1px; margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 13px;
+    padding: 8px 10px; border-radius: 3px; outline: none;
+  }
+  .field input:focus { border-color: var(--green); }
+  .btn-connect {
+    width: 100%; background: var(--green); color: #000; font-family: var(--font);
+    font-size: 13px; font-weight: bold; letter-spacing: 2px;
+    padding: 10px; border: none; border-radius: 3px; cursor: pointer;
+    text-transform: uppercase; margin-top: 6px;
+  }
+  .btn-connect:hover { background: #7fffaa; }
+  .hint { color: var(--muted); font-size: 11px; margin-top: 14px; line-height: 1.6; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .dot-red { background: var(--red); }
+  .dot-green { background: var(--green); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── Chat App ─────────────────────────────────────────────── */
+  #chat-app { display: none; height: 100vh; flex-direction: column; }
+  #chat-app.active { display: flex; }
+
+  .top-bar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 14px; height: 46px; gap: 10px; flex-shrink: 0;
+  }
+  .top-bar .title { color: var(--green); font-size: 12px; letter-spacing: 2px; font-weight: bold; }
+  .top-bar .sep { color: var(--border); }
+  .top-bar .room-badge {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--amber);
+    font-size: 11px; padding: 2px 8px; border-radius: 12px; cursor: pointer;
+  }
+  .top-bar .spacer { flex: 1; }
+  .top-bar .online-count { color: var(--muted); font-size: 11px; }
+  .top-bar .btn-disc {
+    background: transparent; border: 1px solid var(--border); color: var(--red);
+    font-family: var(--font); font-size: 11px; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer; letter-spacing: 1px;
+  }
+  .top-bar .btn-disc:hover { background: var(--red); color: #fff; }
+
+  .room-bar {
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+    display: flex; gap: 2px; padding: 6px 10px; flex-shrink: 0;
+  }
+  .room-btn {
+    background: transparent; border: 1px solid transparent; color: var(--muted);
+    font-family: var(--font); font-size: 11px; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer; letter-spacing: 1px;
+  }
+  .room-btn:hover { color: var(--text); border-color: var(--border); }
+  .room-btn.active { color: var(--green); border-color: var(--green); background: rgba(90,255,122,0.07); }
+
+  #messages {
+    flex: 1; overflow-y: auto; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 2px;
+    scroll-behavior: smooth;
+  }
+  #messages::-webkit-scrollbar { width: 5px; }
+  #messages::-webkit-scrollbar-track { background: var(--bg); }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .msg { display: flex; gap: 8px; padding: 3px 0; line-height: 1.5; }
+  .msg-time { color: var(--muted); font-size: 11px; flex-shrink: 0; padding-top: 1px; }
+  .msg-name { color: var(--amber); font-weight: bold; flex-shrink: 0; }
+  .msg-text { color: var(--text); word-break: break-word; }
+  .msg.self .msg-name { color: var(--green); }
+  .msg.system { }
+  .msg.system .msg-text { color: var(--muted); font-style: italic; }
+  .msg.pm-in .msg-text { color: #ffaaff; font-style: italic; }
+  .msg.pm-out .msg-text { color: #8888ff; font-style: italic; }
+
+  .day-sep {
+    text-align: center; color: var(--muted); font-size: 10px;
+    letter-spacing: 2px; margin: 10px 0; position: relative;
+  }
+  .day-sep::before, .day-sep::after {
+    content: ''; position: absolute; top: 50%; width: 40%;
+    height: 1px; background: var(--border);
+  }
+  .day-sep::before { left: 0; } .day-sep::after { right: 0; }
+
+  .input-area {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 10px 14px; display: flex; gap: 8px; flex-shrink: 0;
+  }
+  #msg-input {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 13px;
+    padding: 8px 12px; border-radius: 3px; outline: none; resize: none; height: 38px;
+    max-height: 120px;
+  }
+  #msg-input:focus { border-color: var(--green); }
+  #msg-input::placeholder { color: var(--muted); }
+  .btn-send {
+    background: var(--green); color: #000; font-family: var(--font);
+    font-size: 13px; font-weight: bold; padding: 0 18px;
+    border: none; border-radius: 3px; cursor: pointer; flex-shrink: 0;
+  }
+  .btn-send:hover { background: #7fffaa; }
+  .btn-send:disabled { background: var(--border); color: var(--muted); cursor: default; }
+
+  .conn-status {
+    padding: 4px 14px; font-size: 10px; letter-spacing: 1px; flex-shrink: 0;
+    background: var(--bg3); border-top: 1px solid var(--border);
+  }
+  .conn-status.ok    { color: var(--green); }
+  .conn-status.err   { color: var(--red); }
+  .conn-status.warn  { color: var(--amber); }
+
+  /* ── Custom room modal ─────────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--green);
+    border-radius: 4px; padding: 24px; width: 320px;
+  }
+  .modal h3 { color: var(--green); font-size: 12px; letter-spacing: 2px; margin-bottom: 16px; }
+  .modal input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font); font-size: 13px;
+    padding: 8px 10px; border-radius: 3px; outline: none; margin-bottom: 12px;
+  }
+  .modal input:focus { border-color: var(--green); }
+  .modal-btns { display: flex; gap: 8px; }
+  .modal-btns button {
+    flex: 1; padding: 8px; font-family: var(--font); font-size: 12px;
+    border: 1px solid var(--border); border-radius: 3px; cursor: pointer;
+    background: transparent; color: var(--text);
+  }
+  .modal-btns .btn-ok { border-color: var(--green); color: var(--green); }
+  .modal-btns .btn-ok:hover { background: var(--green); color: #000; }
+</style>
+</head>
+<body>
+
+<!-- ── Connect Screen ───────────────────────────────────────────────────────── -->
+<div id="connect-screen">
+  <div class="logo">
+█▀▀█ █▀▀ █▀▀ ░░ █▀▀ █░░█ █▀▀█ ▀▀█▀▀
+█░░█ █▀▀ █▀▀ ░░ █░░ █▀▀█ █▄▄█ ░░█░░
+▀▀▀▀ ▀▀▀ ▀░░ ░░ ▀▀▀ ▀░░▀ ▀░░▀ ░░▀░░
+  </div>
+  <div class="connect-box">
+    <h2>⚡ Connect to LAN</h2>
+    <div class="field">
+      <label>SERVER IP ADDRESS</label>
+      <input type="text" id="srv-ip" placeholder="192.168.1.5" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>PORT</label>
+      <input type="number" id="srv-port" value="8765">
+    </div>
+    <div class="field">
+      <label>YOUR NAME</label>
+      <input type="text" id="user-name" placeholder="Alpha" maxlength="24" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>JOIN ROOM</label>
+      <select id="room-sel">
+        <option value="general">📡 #general</option>
+        <option value="emergency">🆘 #emergency</option>
+        <option value="supply">📦 #supply</option>
+      </select>
+    </div>
+    <button class="btn-connect" onclick="doConnect()">▶ CONNECT</button>
+    <div class="hint">
+      <span class="status-dot dot-red" id="pre-dot"></span>
+      <span id="pre-status">Not connected</span><br><br>
+      Start <code>chat_server.py</code> on the host machine first.<br>
+      Then enter that machine's IP address above.
+    </div>
+  </div>
+</div>
+
+<!-- ── Chat App ──────────────────────────────────────────────────────────────── -->
+<div id="chat-app">
+  <div class="top-bar">
+    <span class="status-dot dot-green" id="top-dot"></span>
+    <span class="title">LAN CHAT</span>
+    <span class="sep">|</span>
+    <span class="room-badge" id="cur-room-badge" onclick="showRoomModal()">#general ▾</span>
+    <span class="spacer"></span>
+    <span class="online-count" id="online-count"></span>
+    <button class="btn-disc" onclick="disconnect()">✕ DISCONNECT</button>
+  </div>
+
+  <div class="room-bar" id="room-bar">
+    <button class="room-btn active" onclick="switchRoom('general')"   data-room="general">📡 #general</button>
+    <button class="room-btn"        onclick="switchRoom('emergency')" data-room="emergency">🆘 #emergency</button>
+    <button class="room-btn"        onclick="switchRoom('supply')"    data-room="supply">📦 #supply</button>
+    <button class="room-btn"        onclick="showRoomModal()" style="color:var(--muted)">+ Room</button>
+  </div>
+
+  <div id="messages"></div>
+
+  <div class="conn-status ok" id="conn-status">● CONNECTED</div>
+
+  <div class="input-area">
+    <textarea id="msg-input" placeholder="Type message… /help for commands" rows="1"
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="btn-send" id="send-btn" onclick="sendMsg()">SEND</button>
+  </div>
+</div>
+
+<!-- ── Room Modal ─────────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="room-modal" onclick="if(event.target===this)hideRoomModal()">
+  <div class="modal">
+    <h3>JOIN / CREATE ROOM</h3>
+    <input type="text" id="room-input" placeholder="room-name" maxlength="32"
+      onkeydown="if(event.key==='Enter')joinCustomRoom()">
+    <div class="modal-btns">
+      <button onclick="hideRoomModal()">Cancel</button>
+      <button class="btn-ok" onclick="joinCustomRoom()">Join Room</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let ws, myName, myRoom = 'general', reconnTimer;
+
+// ─── Connect ───────────────────────────────────────────────────────────────────
+function doConnect() {
+  const ip   = document.getElementById('srv-ip').value.trim();
+  const port = document.getElementById('srv-port').value.trim() || '8765';
+  myName = document.getElementById('user-name').value.trim() || 'User' + Math.floor(Math.random()*900+100);
+  myRoom = document.getElementById('room-sel').value;
+
+  if (!ip) { alert('Enter server IP address'); return; }
+
+  const url = `ws://${ip}:${port}`;
+  setPreStatus('Connecting…', false);
+  try { ws = new WebSocket(url); } catch(e) { setPreStatus('Invalid address', false); return; }
+
+  ws.onopen = () => {
+    clearTimeout(reconnTimer);
+    ws.send(JSON.stringify({ type: 'join', name: myName, room: myRoom }));
+    document.getElementById('connect-screen').style.display = 'none';
+    const app = document.getElementById('chat-app');
+    app.classList.add('active');
+    setConnStatus(true);
+    document.getElementById('msg-input').focus();
+  };
+
+  ws.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.type === 'history') {
+      clearMessages();
+      d.messages.forEach(m => renderMsg(m));
+      updateRoomBadge(d.room || myRoom);
+    } else {
+      renderMsg(d);
+    }
+  };
+
+  ws.onclose = () => {
+    setConnStatus(false);
+    reconnTimer = setTimeout(() => doConnect(), 3000);
+  };
+
+  ws.onerror = () => {
+    setPreStatus('Connection refused. Is chat_server.py running?', false);
+  };
+}
+
+function disconnect() {
+  clearTimeout(reconnTimer);
+  if (ws) ws.close();
+  document.getElementById('connect-screen').style.display = 'flex';
+  document.getElementById('chat-app').classList.remove('active');
+  setPreStatus('Disconnected', false);
+}
+
+// ─── Messaging ──────────────────────────────────────────────────────────────────
+function sendMsg() {
+  const inp = document.getElementById('msg-input');
+  const text = inp.value.trim();
+  if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify({ type: 'message', text }));
+  inp.value = '';
+  inp.style.height = '';
+  inp.focus();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function autoResize(el) {
+  el.style.height = '';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ─── Rendering ──────────────────────────────────────────────────────────────────
+function renderMsg(d) {
+  const box = document.getElementById('messages');
+  const row = document.createElement('div');
+  const isSelf = d.name === myName;
+
+  if (d.type === 'history') return;
+
+  if (d.type === 'system') {
+    row.className = 'msg system';
+    row.innerHTML = `<span class="msg-time">${d.time}</span><span class="msg-text">— ${esc(d.text)}</span>`;
+  } else if (d.type === 'pm') {
+    row.className = 'msg pm-in';
+    row.innerHTML = `<span class="msg-time">${d.time}</span><span class="msg-name" style="color:#ffaaff">DM from ${esc(d.from_)}:</span><span class="msg-text">${esc(d.text)}</span>`;
+  } else if (d.type === 'pm_sent') {
+    row.className = 'msg pm-out';
+    row.innerHTML = `<span class="msg-time">${d.time}</span><span class="msg-name" style="color:#8888ff">DM to ${esc(d.to)}:</span><span class="msg-text">${esc(d.text)}</span>`;
+  } else {
+    row.className = 'msg' + (isSelf ? ' self' : '');
+    row.innerHTML = `<span class="msg-time">${d.time}</span><span class="msg-name">${esc(d.name)}</span><span class="msg-text">${linkify(esc(d.text))}</span>`;
+  }
+
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+
+function clearMessages() {
+  document.getElementById('messages').innerHTML = '';
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function linkify(s) {
+  return s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--blue)">$1</a>');
+}
+
+// ─── Rooms ──────────────────────────────────────────────────────────────────────
+function switchRoom(room) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  myRoom = room;
+  ws.send(JSON.stringify({ type: 'message', text: `/join ${room}` }));
+  updateRoomBadge(room);
+  document.querySelectorAll('.room-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.room === room);
+  });
+}
+
+function updateRoomBadge(room) {
+  const labels = { general:'📡', emergency:'🆘', supply:'📦' };
+  const icon = labels[room] || '💬';
+  document.getElementById('cur-room-badge').textContent = `${icon} #${room} ▾`;
+}
+
+function showRoomModal() { document.getElementById('room-modal').classList.add('show'); document.getElementById('room-input').focus(); }
+function hideRoomModal() { document.getElementById('room-modal').classList.remove('show'); }
+
+function joinCustomRoom() {
+  const name = document.getElementById('room-input').value.trim().replace(/\s+/g,'-').toLowerCase();
+  if (!name) return;
+  hideRoomModal();
+
+  // Add button if not there
+  const existing = document.querySelector(`[data-room="${name}"]`);
+  if (!existing) {
+    const bar = document.getElementById('room-bar');
+    const btn = document.createElement('button');
+    btn.className = 'room-btn';
+    btn.dataset.room = name;
+    btn.textContent = `💬 #${name}`;
+    btn.onclick = () => switchRoom(name);
+    bar.insertBefore(btn, bar.lastElementChild);
+  }
+
+  switchRoom(name);
+  document.getElementById('room-input').value = '';
+}
+
+// ─── Status ─────────────────────────────────────────────────────────────────────
+function setPreStatus(msg, ok) {
+  document.getElementById('pre-status').textContent = msg;
+  document.getElementById('pre-dot').className = 'status-dot ' + (ok ? 'dot-green' : 'dot-red');
+}
+
+function setConnStatus(ok) {
+  const el = document.getElementById('conn-status');
+  if (ok) { el.textContent = '● CONNECTED'; el.className = 'conn-status ok'; }
+  else     { el.textContent = '● RECONNECTING…'; el.className = 'conn-status warn'; }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  // Try to pre-fill IP from URL param
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('ip')) document.getElementById('srv-ip').value = p.get('ip');
+  if (p.get('name')) document.getElementById('user-name').value = p.get('name');
+};
+</script>
+</body>
+</html>
