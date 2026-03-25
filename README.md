@@ -52,24 +52,51 @@ All of this works as long as you have **electricity and a WiFi router** (or even
 ```
 NetBunker/
 │
-├── 📄 index.html              ← The full survival manual (open in browser)
-├── 📄 README.txt              ← Quick reference guide
-├── 📄 Modelfile               ← AI personality configuration
+├── 📄 index.html                        ← The full survival manual (open in browser)
+├── 📄 README.md                         ← This file (GitHub page)
+├── 📄 README.txt                        ← Plain text quick reference
+├── 📄 Modelfile                         ← AI personality + settings config
 │
 ├── 📁 scripts/
-│   ├── serve_site.py          ← Web server    → shares the manual
-│   ├── ftp_server.py          ← File sharing  → like a local Dropbox
-│   ├── chat_server.py         ← Group chat    → like WhatsApp, offline
-│   ├── ollama_proxy.py        ← AI server     → makes AI work on all devices
-│   └── setup_hosts.py         ← Easy addresses → type "chat.local" instead of IPs
+│   ├── serve_site.py                    ← Web server    → shares the manual
+│   ├── ftp_server.py                    ← File sharing  → like a local Dropbox
+│   ├── chat_server.py                   ← Group chat    → like WhatsApp, offline
+│   ├── ollama_proxy.py                  ← AI server     → makes AI work on all devices
+│   └── setup_hosts.py                   ← Easy addresses → type "chat.local" instead of IPs
 │
 ├── 📁 ui/
-│   ├── chat_ui.html           ← Open in browser to chat
-│   └── ollama_ui.html         ← Open in browser to talk to AI
+│   ├── chat_ui.html                     ← Open in browser to chat
+│   └── ollama_ui.html                   ← Open in browser to talk to AI
 │
-└── 📁 config/
-    └── requirements.txt       ← List of Python packages needed
+├── 📁 config/
+│   └── requirements.txt                 ← List of Python packages needed
+│
+└── 📁 {scripts,ui,config,assets}/       ← ⚠️ AI model folder (see note below)
+    ├── DOWNLOAD_MODEL.txt               ← Instructions to get the AI model
+    └── qwen2.5-1.5b.gguf               ← ❌ NOT INCLUDED — download manually
 ```
+
+> ### ⚠️ About the `{scripts,ui,config,assets}` folder
+> This folder has an unusual name because it was created on Linux where `{a,b,c}` is a shell shortcut that normally creates **multiple** folders. On Windows, it was created as a **single** folder with that exact name — that is intentional and fine. **Leave the folder name as-is.** Just place your downloaded `.gguf` file inside it.
+
+---
+
+> ### 🤖 AI Model Not Included (GitHub File Size Limit)
+>
+> GitHub has a **100 MB maximum file size limit**.  
+> The AI brain file (`qwen2.5-1.5b.gguf`) is **~986 MB** and cannot be uploaded here.
+>
+> 📥 **Download it yourself (free, one time):**
+>
+> **➡️ [Click here to download from Hugging Face](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/tree/main)**
+>
+> 1. Open the link above
+> 2. Click `qwen2.5-1.5b-instruct-q4_k_m.gguf`
+> 3. Click the ⬇ download button (~986 MB)
+> 4. Move the file into the `{scripts,ui,config,assets}` folder
+> 5. See `{scripts,ui,config,assets}/DOWNLOAD_MODEL.txt` for full instructions
+>
+> The folder `{scripts,ui,config,assets}/DOWNLOAD_MODEL.txt` already included in this repo explains everything step by step.
 
 ---
 
