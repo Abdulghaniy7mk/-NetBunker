@@ -260,7 +260,7 @@ The AI runs on **one computer** and all devices on the network can use it.
 ### Requirements for the AI computer:
 | RAM | What you can run |
 |-----|-----------------|
-| 4 GB | qwen2.5:1.5b ✅ (included) |
+| 4 GB | qwen2.5:1.5b  ( not included) |
 | 6 GB | phi3:mini, gemma2:2b |
 | 8 GB | mistral:7b, llama3:8b |
 | 16 GB+ | llama3:70b (very smart) |
